@@ -6,6 +6,9 @@ import pandas as pd
 from scipy.stats import mannwhitneyu
 
 DATA_PATH = Path(__file__).parent / 'data/Donghoon_Lee...Panos_Roussos/PsychAD_SupplementaryTable6.csv'
+AGING_PATH = Path(__file__).parent / 'data/Hui_Yang...Panos_Roussos/Supplementary_Data_4.rds.filtered.csv.gz'
+AGING_GROUPS = ['Developmental', 'Young_Adulthood', 'Middle_Adulthood', 'Late_Adulthood']
+AGING_LABELS = dict(zip(AGING_GROUPS, ['Development (0–19)', 'Young adulthood (20–39)', 'Middle adulthood (40–59)', 'Late adulthood (≥60)']))
 PHENOTYPES = ['dx_AD', 'CERAD', 'Braak', 'Dementia']
 LABELS = {'dx_AD': 'AD diagnosis', 'CERAD': 'CERAD', 'Braak': 'Braak', 'Dementia': 'Dementia'}
 SCORES = {'Signed t-statistic': ('statistic', False), 'Absolute t-statistic': ('statistic', True), 'Signed effect estimate': ('estimate', False)}
@@ -16,7 +19,12 @@ def parse_genes(text):
 
 
 def load_data(path=DATA_PATH):
-    data = pd.read_csv(path, usecols=['coef', 'assay', 'ID', 'statistic', 'estimate'])
+    columns = pd.read_csv(path, nrows=0).columns
+    aging = {'group', 'assay', 'ID', 't', 'logFC'}.issubset(columns)
+    names = ['group', 'assay', 'ID', 't', 'logFC'] if aging else ['coef', 'assay', 'ID', 'statistic', 'estimate']
+    data = pd.read_csv(path, usecols=names)
+    if aging:
+        data = data.rename(columns={'group': 'coef', 't': 'statistic', 'logFC': 'estimate'})
     if data.duplicated(['coef', 'assay', 'ID']).any():
         raise ValueError('Duplicate genes within a phenotype/cell type in the source table.')
     return data
