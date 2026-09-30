@@ -26,3 +26,11 @@ C4B, PIRT and SERPINA3 remain current human symbols. All three and RP11-203I2 ar
 ## Aging dataset
 
 Select **Aging** to load `data/Hui_Yang...Panos_Roussos/Supplementary_Data_4.rds.filtered.csv.gz` from Hui Yang et al., *Lifespan single-cell transcriptomic atlas of the human prefrontal cortex*, https://www.nature.com/articles/s41586-026-10271-7. The supplied file contains 26 cell types × four age periods (104 tests). `group`, `t`, and `logFC` map to the analysis phenotype, statistic, and estimate columns. Positive signed scores indicate increasing expression with age within the indicated period, not a contrast between age groups. The eligible universe is restricted to the supplied filtered file; no additional significance filtering is applied. BH correction covers valid tests in the selected dataset only. The existing AD dataset remains the default.
+
+## Whole-lifespan analysis
+
+`Rscript scripts/prepare_lifespan.R` filters Supplementary Data 7 by excluding IDs matching `^ENSG`, keeps ID, assay, F, coef_1, coef_2, and writes `Supplementary_Data_7.filtered.csv`. No significance filter is applied. Select **Aging — whole lifespan** for the full-age polynomial model; **Aging — within age bins** uses Supplementary Data 4. The whole-lifespan default ranks overall F-statistics (unsigned association strength); optional signed coefficients represent the linear/quadratic orthogonal polynomial terms of log2(age+1), not a single monotonic aging slope. FDR is across the 26 valid cell-type tests.
+
+Whole-lifespan mode now shows F-statistic and coarse AveExpr slope side by side. The R preparation joins the union of S7 genes and non-ENSG S4 genes, retaining unavailable measures as NA. Slopes require four finite bin means and use OLS against x=1,2,3,4 (equal bin spacing), not donor ages. Each column uses its own available gene universe; BH correction spans both columns. The slope is descriptive and unadjusted, not a reconstructed donor-level age effect.
+
+Whole-lifespan heatmap columns now begin with four AveExpr z-score AUROCs (development, young, middle, late), followed by slope and F-statistic last. Z-scores standardize each gene-cell pair across its four bin means using sample SD (ddof=1). Missing or zero-variance profiles are excluded from z-score tests; no imputation. BH correction covers all valid tests across six columns.
